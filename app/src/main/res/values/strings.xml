@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">InstaMin</string>
+    <string name="login">Welcome,\nLogin to continue</string>
+</resources>
