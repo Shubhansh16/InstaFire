@@ -9,12 +9,16 @@ import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.instamin.models.Post
+import com.example.instamin.models.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 private const val TAG ="MainActivity"
-class MainActivity : AppCompatActivity() {
+const val EXTRA_USERNAME = "EXTRA_USERNAME"
+open class MainActivity : AppCompatActivity() {
 
+    private var signedInUser : User? = null
     private lateinit var firestoreDb: FirebaseFirestore
     private lateinit var posts: MutableList<Post>
     private lateinit var rvPosts: RecyclerView
@@ -35,13 +39,34 @@ class MainActivity : AppCompatActivity() {
         rvPosts.layoutManager= LinearLayoutManager(this)
 
         firestoreDb= FirebaseFirestore.getInstance()
-        val postsReference = firestoreDb
+
+
+        firestoreDb.collection("users")
+            .document(FirebaseAuth.getInstance().currentUser?.uid as String)
+            .get()
+            .addOnSuccessListener {
+                signedInUser = it.toObject(User::class.java)
+                Log.i(TAG,"signed in user: $signedInUser")
+            }
+
+            .addOnFailureListener { exception ->
+                Log.i(TAG,"failure fetching signed in user",exception)
+            }
+
+        var postsReference = firestoreDb
             .collection("posts")
             .limit(20)
             .orderBy("creation_time_ms", Query.Direction.DESCENDING)
+
+        val username = intent.getStringExtra(EXTRA_USERNAME)
+        if (username!=null){
+            supportActionBar?.title = username
+            postsReference= postsReference.whereEqualTo("user.username",username)
+        }
+
         postsReference.addSnapshotListener { snapshot, exception ->
            if (exception!=null || snapshot == null){
-               Log.e(TAG,"exception when quering posts",exception)
+               Log.e(TAG,"exception when querying posts",exception)
                return@addSnapshotListener
            }
 
@@ -63,6 +88,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId== R.id.profile) {
            val intent = Intent(this, ProfileActivity::class.java)
+            intent.putExtra(EXTRA_USERNAME, signedInUser?.username)
             startActivity(intent)
         }
         return super.onOptionsItemSelected(item)
