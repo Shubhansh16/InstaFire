@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.instamin.models.Post
 import com.example.instamin.models.User
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -19,6 +20,7 @@ const val EXTRA_USERNAME = "EXTRA_USERNAME"
 open class MainActivity : AppCompatActivity() {
 
     private var signedInUser : User? = null
+    private lateinit var fabCreate:FloatingActionButton
     private lateinit var firestoreDb: FirebaseFirestore
     private lateinit var posts: MutableList<Post>
     private lateinit var rvPosts: RecyclerView
@@ -27,7 +29,7 @@ open class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
+        fabCreate= findViewById(R.id.floatingBtn)
         //create a ui for the rv - done
         //create an adapter
         //create a data source- done
@@ -78,6 +80,10 @@ open class MainActivity : AppCompatActivity() {
                 Log.i(TAG,"Post ${post}")
             }
         }
+        fabCreate.setOnClickListener{
+            val intent = Intent(this, CreateActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -88,7 +94,7 @@ open class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId== R.id.profile) {
            val intent = Intent(this, ProfileActivity::class.java)
-            intent.putExtra(EXTRA_USERNAME, signedInUser?.username)
+            intent.putExtra(EXTRA_USERNAME ,"jethalal")
             startActivity(intent)
         }
         return super.onOptionsItemSelected(item)
